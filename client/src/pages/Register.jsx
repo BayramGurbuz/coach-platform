@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { coachesAPI } from '../services/api';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { useLanguage } from '../context/LanguageContext';
 
-function Register({ onRegister }) {
+function Register({ user, onRegister }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -19,21 +21,27 @@ function Register({ onRegister }) {
   const [loading, setLoading] = useState(false);
   const [currentSpecialty, setCurrentSpecialty] = useState('');
 
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
+
   const commonSpecialties = [
-    'Kariyer Koçluğu',
-    'Yaşam Koçluğu',
-    'Liderlik',
-    'Kişisel Gelişim',
-    'İş Hayatı',
-    'Motivasyon',
-    'Fitness',
-    'Sağlık',
-    'Beslenme',
-    'Mindfulness',
-    'İlişkiler',
-    'Finans',
-    'Girişimcilik',
-    'Stres Yönetimi',
+    t('register.careerCoaching'),
+    t('register.lifeCoaching'),
+    t('register.leadership'),
+    t('register.personalDev'),
+    t('register.workLife'),
+    t('register.motivation'),
+    t('register.fitness'),
+    t('register.health'),
+    t('register.nutrition'),
+    t('register.mindfulness'),
+    t('register.relationships'),
+    t('register.finance'),
+    t('register.entrepreneurship'),
+    t('register.stress'),
   ];
 
   const handleChange = (e) => {
@@ -71,22 +79,22 @@ function Register({ onRegister }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.email) newErrors.email = 'Email gereklidir';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Geçerli bir email girin';
+    if (!formData.email) newErrors.email = t('register.validation.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = t('register.validation.invalidEmail');
 
-    if (!formData.password) newErrors.password = 'Şifre gereklidir';
-    else if (formData.password.length < 6) newErrors.password = 'Şifre en az 6 karakter olmalı';
+    if (!formData.password) newErrors.password = t('register.validation.passwordRequired');
+    else if (formData.password.length < 6) newErrors.password = t('register.validation.passwordTooShort');
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Şifreler eşleşmiyor';
+      newErrors.confirmPassword = t('register.validation.passwordsDontMatch');
     }
 
-    if (!formData.full_name) newErrors.full_name = 'Ad Soyad gereklidir';
-    if (!formData.hourly_rate) newErrors.hourly_rate = 'Saatlik ücret gereklidir';
-    else if (parseFloat(formData.hourly_rate) <= 0) newErrors.hourly_rate = 'Geçerli bir ücret girin';
+    if (!formData.full_name) newErrors.full_name = t('register.validation.nameRequired');
+    if (!formData.hourly_rate) newErrors.hourly_rate = t('register.validation.hourlyRateRequired');
+    else if (parseFloat(formData.hourly_rate) <= 0) newErrors.hourly_rate = t('register.validation.hourlyRateInvalid');
 
     if (formData.specialties.length === 0) {
-      newErrors.specialties = 'En az bir uzmanlık alanı seçin';
+      newErrors.specialties = t('register.validation.specialtiesRequired');
     }
 
     setErrors(newErrors);
@@ -113,7 +121,7 @@ function Register({ onRegister }) {
       onRegister(response.data.coach, response.data.token);
       navigate('/dashboard');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Kayıt sırasında bir hata oluştu';
+      const errorMessage = err.response?.data?.error || t('common.error');
       setErrors({ submit: errorMessage });
       console.error(err);
     } finally {
@@ -127,24 +135,24 @@ function Register({ onRegister }) {
         {/* Breadcrumbs */}
         <Breadcrumbs
           items={[
-            { label: 'Ana Sayfa', href: '/' },
-            { label: 'Kayıt Ol', href: null },
+            { label: t('nav.home'), href: '/' },
+            { label: t('register.title'), href: null },
           ]}
         />
         
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">
-            Koç Olarak Kayıt Ol
+            {t('register.title')}
           </h1>
           <p className="text-neutral-600 dark:text-white">
-            Uzmanlığınızı paylaşın ve insanlara yardımcı olun
+            {t('register.subtitle')}
           </p>
           {/* Koç bildirimi */}
-          <div className="mt-4 inline-flex items-center gap-2 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-4 py-2 rounded-full text-sm">
+            <div className="mt-4 inline-flex items-center gap-2 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-4 py-2 rounded-full text-sm">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Bu platform yalnızca koç kaydı içindir</span>
+            <span>{t('register.coachOnlyNotice')}</span>
           </div>
         </div>
 
@@ -161,13 +169,13 @@ function Register({ onRegister }) {
           {/* Personal Information */}
           <fieldset>
             <legend className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-              Kişisel Bilgiler
+              {t('register.personalInfo')}
             </legend>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="full_name" className="label">
-                  Ad Soyad *
+                  <label htmlFor="full_name" className="label">
+                  {t('register.fullName')} *
                 </label>
                 <input
                   type="text"
@@ -189,7 +197,7 @@ function Register({ onRegister }) {
 
               <div>
                 <label htmlFor="email" className="label">
-                  Email *
+                  {t('register.email')} *
                 </label>
                 <input
                   type="email"
@@ -211,7 +219,7 @@ function Register({ onRegister }) {
 
               <div>
                 <label htmlFor="password" className="label">
-                  Şifre *
+                  {t('register.password')} *
                 </label>
                 <input
                   type="password"
@@ -225,7 +233,7 @@ function Register({ onRegister }) {
                   aria-describedby={errors.password ? 'password-error password-hint' : 'password-hint'}
                 />
                 <p id="password-hint" className="text-sm text-neutral-600 dark:text-white mt-1">
-                  En az 6 karakter
+                  {t('register.passwordHint')}
                 </p>
                 {errors.password && (
                   <p id="password-error" className="text-danger-500 text-sm mt-1" role="alert">
@@ -236,7 +244,7 @@ function Register({ onRegister }) {
 
               <div>
                 <label htmlFor="confirmPassword" className="label">
-                  Şifre Tekrar *
+                  {t('register.confirmPassword')} *
                 </label>
                 <input
                   type="password"
@@ -261,13 +269,13 @@ function Register({ onRegister }) {
           {/* Professional Information */}
           <fieldset>
             <legend className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-              Profesyonel Bilgiler
+              {t('register.professionalInfo')}
             </legend>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="bio" className="label">
-                  Hakkınızda
+                  <label htmlFor="bio" className="label">
+                  {t('register.bio')}
                 </label>
                 <textarea
                   id="bio"
@@ -276,18 +284,18 @@ function Register({ onRegister }) {
                   onChange={handleChange}
                   rows="4"
                   className="input"
-                  placeholder="Deneyimleriniz, yaklaşımınız ve insanlara nasıl yardımcı olabileceğinizi anlatın..."
+                  placeholder={t('register.bioPlaceholder')}
                   aria-describedby="bio-hint"
                 />
                 <p id="bio-hint" className="text-sm text-neutral-600 dark:text-white mt-1">
-                  Bu bilgi profilinizde görünecektir
+                  {t('register.bioHint')}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="hourly_rate" className="label">
-                    Saatlik Ücret (₺) *
+                    {t('register.hourlyRateLabel')}
                   </label>
                   <input
                     type="number"
@@ -311,7 +319,7 @@ function Register({ onRegister }) {
 
                 <div>
                   <label htmlFor="years_experience" className="label">
-                    Deneyim (Yıl)
+                    {t('register.yearsExperience')}
                   </label>
                   <input
                     type="number"
@@ -327,7 +335,7 @@ function Register({ onRegister }) {
 
               <div>
                 <label htmlFor="specialty-input" className="label">
-                  Uzmanlık Alanları *
+                  {t('register.specialties')} *
                 </label>
                 <div className="flex gap-2 mb-2">
                   <input
@@ -341,7 +349,7 @@ function Register({ onRegister }) {
                         addSpecialty(currentSpecialty);
                       }
                     }}
-                    placeholder="Uzmanlık alanı yazın veya aşağıdan seçin"
+                    placeholder={t('register.specialtyPlaceholder')}
                     className="input"
                     aria-describedby="specialty-hint"
                   />
@@ -349,18 +357,18 @@ function Register({ onRegister }) {
                     type="button"
                     onClick={() => addSpecialty(currentSpecialty)}
                     className="btn-primary whitespace-nowrap"
-                    aria-label="Uzmanlık alanı ekle"
+                    aria-label={t('register.addSpecialtyAria')}
                   >
-                    Ekle
+                    {t('register.addSpecialty')}
                   </button>
                 </div>
                 <p id="specialty-hint" className="text-sm text-neutral-600 dark:text-white mb-2">
-                  Enter tuşuna basarak da ekleyebilirsiniz
+                  {t('register.addByEnter')}
                 </p>
 
                 {/* Common specialties */}
                 <div className="mb-3">
-                  <p className="text-sm font-medium text-neutral-700 dark:text-white mb-2">Popüler alanlar:</p>
+                  <p className="text-sm font-medium text-neutral-700 dark:text-white mb-2">{t('register.popularSpecialties')}</p>
                   <div className="flex flex-wrap gap-2">
                     {commonSpecialties.map((spec) => (
                       <button
@@ -373,7 +381,7 @@ function Register({ onRegister }) {
                             ? 'bg-neutral-100 border-neutral-300 text-neutral-500 cursor-not-allowed'
                             : 'border-primary-500 text-primary-500 hover:bg-primary-50'
                         }`}
-                        aria-label={`${spec} ekle`}
+                        aria-label={`${spec} ${t('common.add')}`}
                         aria-pressed={formData.specialties.includes(spec)}
                       >
                         {spec}
@@ -385,7 +393,7 @@ function Register({ onRegister }) {
                 {/* Selected specialties */}
                 {formData.specialties.length > 0 && (
                   <div>
-                    <p className="text-sm font-medium text-neutral-700 dark:text-white mb-2">Seçili alanlar:</p>
+                    <p className="text-sm font-medium text-neutral-700 dark:text-white mb-2">{t('register.selectedSpecialties')}</p>
                     <div className="flex flex-wrap gap-2">
                       {formData.specialties.map((spec) => (
                         <span
@@ -397,7 +405,7 @@ function Register({ onRegister }) {
                             type="button"
                             onClick={() => removeSpecialty(spec)}
                             className="hover:text-danger-500 transition-colors"
-                            aria-label={`${spec} kaldır`}
+                            aria-label={`${spec} ${t('common.remove')}`}
                           >
                             <svg 
                               className="w-4 h-4" 
@@ -428,19 +436,19 @@ function Register({ onRegister }) {
               type="submit"
               disabled={loading}
               className="btn-primary flex-1"
-              aria-label={loading ? 'Kaydediliyor...' : 'Kayıt ol'}
+              aria-label={loading ? t('register.registering') : t('register.registerBtn')}
             >
-              {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
+              {loading ? t('register.registering') : t('register.registerBtn')}
             </button>
             <Link to="/" className="btn-secondary flex-1 text-center">
-              İptal
+              {t('common.cancel')}
             </Link>
           </div>
 
           <p className="text-center text-neutral-600 dark:text-white">
-            Zaten hesabınız var mı?{' '}
+            {t('register.hasAccount')}{' '}
             <Link to="/login" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 font-semibold">
-              Giriş Yapın
+              {t('register.loginLink')}
             </Link>
           </p>
         </form>

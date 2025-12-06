@@ -338,5 +338,29 @@ router.put('/profile-image', async (req, res) => {
   }
 });
 
+// Delete coach account (requires auth)
+router.delete('/me', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Yetkilendirme gerekli' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+
+    // Delete coach (messages cascade due to FK)
+    const result = await pool.query('DELETE FROM coaches WHERE id = $1 RETURNING id, email', [decoded.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Koç bulunamadı' });
+    }
+
+    res.json({ message: 'Hesabınız silindi', coach: result.rows[0] });
+  } catch (error) {
+    console.error('Hesap silme hatası:', error);
+    res.status(500).json({ error: 'Hesap silinirken bir hata oluştu' });
+  }
+});
+
 export default router;
 

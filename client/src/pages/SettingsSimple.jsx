@@ -113,7 +113,7 @@ function SettingsSimple() {
               🌍 {t('settings.language')}
             </h2>
             <p className="text-neutral-600 dark:text-neutral-200 mb-4">
-              Site dilini seçin / Choose site language
+              {t('settings.languageHelp')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
@@ -126,14 +126,14 @@ function SettingsSimple() {
                 aria-pressed={language === 'tr'}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-bold text-neutral-900 dark:text-white">🇹🇷 Türkçe</span>
+                  <span className="text-lg font-bold text-neutral-900 dark:text-white">{t('lang.flag.tr')} {t('lang.turkish')}</span>
                   {language === 'tr' && (
                     <svg className="w-6 h-6 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-200">Türkçe arayüz</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-200">{t('settings.languageTurkishDesc')}</p>
               </button>
 
               <button
@@ -146,14 +146,14 @@ function SettingsSimple() {
                 aria-pressed={language === 'en'}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-bold text-neutral-900 dark:text-white">🇬🇧 English</span>
+                  <span className="text-lg font-bold text-neutral-900 dark:text-white">{t('lang.flag.en')} {t('lang.english')}</span>
                   {language === 'en' && (
                     <svg className="w-6 h-6 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-200">English interface</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-200">{t('settings.languageEnglishDesc')}</p>
               </button>
             </div>
           </section>
@@ -164,7 +164,7 @@ function SettingsSimple() {
               🎨 {t('settings.theme')}
             </h2>
             <p className="text-neutral-600 dark:text-neutral-200 mb-4">
-              Sitenin görünümünü seçin (Erişilebilirlik özelliği - Göz yorgunluğunu azaltır)
+              {t('settings.themeHelp')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
@@ -184,7 +184,7 @@ function SettingsSimple() {
                     </svg>
                   )}
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-200">Standart beyaz arka plan</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-200">{t('settings.lightDesc')}</p>
               </button>
 
               <button
@@ -204,7 +204,7 @@ function SettingsSimple() {
                     </svg>
                   )}
                 </div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-200">Koyu arka plan - Göz yorgunluğunu azaltır</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-200">{t('settings.darkDesc')}</p>
               </button>
             </div>
           </section>
@@ -215,7 +215,7 @@ function SettingsSimple() {
               📝 {t('settings.fontSize')}
             </h2>
             <p className="text-neutral-600 dark:text-neutral-200 mb-4">
-              Sitenin yazı boyutunu ayarlayın (Erişilebilirlik özelliği - Görme zorluğu olanlar için)
+              {t('settings.fontSizeHelp')}
             </p>
             <div className="space-y-3">
               {[
@@ -253,8 +253,7 @@ function SettingsSimple() {
             </div>
             <div className="mt-4 p-4 bg-primary-50 dark:bg-primary-900/30 rounded-lg border-2 border-primary-200 dark:border-primary-700">
               <p className="text-sm text-neutral-700 dark:text-white">
-                ♿ <strong>Erişilebilirlik:</strong> Bu özellik özellikle görme zorluğu olan kullanıcılar için tasarlanmıştır. 
-                Yazı boyutunu ihtiyacınıza göre ayarlayarak siteyi daha rahat kullanabilirsiniz.
+                {t('settings.accessibilityInfo')}
               </p>
             </div>
           </section>
@@ -262,17 +261,20 @@ function SettingsSimple() {
           {/* Keyboard Shortcuts Info */}
           <section>
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-              ⌨️ Klavye Kısayolları
+              {t('shortcuts.title')}
             </h2>
+            <p className="text-neutral-600 dark:text-neutral-200 mb-3">
+              {t('shortcuts.helper')}
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
-                { key: 'H', desc: 'Ana Sayfa' },
-                { key: 'C', desc: 'Koç Bul' },
-                { key: 'S', desc: 'Ayarlar' },
-                { key: 'D', desc: 'Tema Değiştir' },
-                { key: 'M', desc: 'Mesajlar' },
-                { key: 'P', desc: 'Profil' },
-                { key: '?', desc: 'Yardım' },
+                { key: 'H', desc: t('shortcuts.goHome') },
+                { key: 'C', desc: t('nav.findCoach') },
+                { key: 'S', desc: t('shortcuts.goSettings') },
+                { key: 'D', desc: t('shortcuts.toggleDark') },
+                { key: 'M', desc: t('nav.messages') },
+                { key: 'P', desc: t('nav.profile') },
+                { key: '?', desc: t('shortcuts.showShortcuts') },
               ].map((shortcut) => (
                 <div key={shortcut.key} className="flex items-center gap-2 p-3 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
                   <kbd className="px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded font-mono text-sm">

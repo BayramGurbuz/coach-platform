@@ -1,10 +1,14 @@
 import { useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * Reusable Confirm Dialog Component
  * Shneiderman Kural 5: Hata Önleme (Slips önleme için)
  */
-function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = 'Evet', cancelText = 'İptal', type = 'danger' }) {
+function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText, cancelText, type = 'danger' }) {
+  const { t } = useLanguage();
+  const confirmLabel = confirmText || t('common.confirm');
+  const cancelLabel = cancelText || t('common.cancel');
   useEffect(() => {
     if (isOpen) {
       // Escape ile kapat
@@ -80,7 +84,7 @@ function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText
             onClick={onClose}
             className="btn-secondary"
           >
-            {cancelText}
+            {cancelLabel}
           </button>
           <button
             onClick={async () => {
@@ -93,7 +97,7 @@ function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText
             }`}
             autoFocus
           >
-            {confirmText}
+            {confirmLabel}
           </button>
         </div>
 

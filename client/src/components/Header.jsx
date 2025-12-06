@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import AuthButton from './AuthButton';
 
 function Header({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,15 +28,15 @@ function Header({ user, onLogout }) {
       <nav className="container-custom py-4" aria-label="Ana navigasyon">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2 text-2xl font-bold text-primary-500 hover:text-primary-600 dark:text-primary-400 transition-colors"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span>{language === 'tr' ? 'Koç Platformu' : 'Coach Platform'}</span>
-          </Link>
+            <Link
+              to="/"
+              className="flex items-center space-x-2 text-2xl font-bold text-primary-500 hover:text-primary-600 dark:text-primary-400 transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span>{t('site.title')}</span>
+            </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
@@ -82,13 +83,7 @@ function Header({ user, onLogout }) {
                   {t('nav.settings')}
                 </Link>
 
-                {/* Çıkış */}
-                <button onClick={onLogout} className="btn-outline flex items-center gap-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  {t('nav.logout')}
-                </button>
+                <AuthButton variant="logout" onClick={onLogout}>{t('nav.logout')}</AuthButton>
               </>
             ) : (
               <>
@@ -101,28 +96,20 @@ function Header({ user, onLogout }) {
                   {t('nav.settings')}
                 </Link>
 
-                <Link to="/login" className="btn-outline flex items-center gap-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                  {t('nav.login')}
-                </Link>
-                <Link to="/register" className="btn-primary flex items-center gap-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                  {t('nav.register')}
-                </Link>
+                <AuthButton variant="login" to="/login">{t('nav.login')}</AuthButton>
+                <AuthButton variant="register" to="/register">{t('nav.register')}</AuthButton>
               </>
             )}
 
             {/* Language Switcher */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-medium text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors font-medium text-sm"
             >
-              <span className="text-lg">{language === 'tr' ? '🇹🇷' : '🇬🇧'}</span>
-              <span className="text-neutral-700 dark:text-white">{language.toUpperCase()}</span>
+                <span className="text-lg">{language === 'tr' ? t('lang.flag.tr') : t('lang.flag.en')}</span>
+                <span className="text-neutral-700 dark:text-white">
+                  {language === 'tr' ? t('lang.turkish') : t('lang.english')}
+                </span>
             </button>
           </div>
 
@@ -130,7 +117,7 @@ function Header({ user, onLogout }) {
           <div className="md:hidden flex items-center gap-2">
             <button
               onClick={toggleLanguage}
-              className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-lg"
+              className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-lg group motion-safe:transform motion-safe:transition motion-safe:duration-200 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 motion-reduce:transition-none motion-reduce:transform-none"
             >
               {language === 'tr' ? '🇹🇷' : '🇬🇧'}
             </button>
@@ -208,18 +195,9 @@ function Header({ user, onLogout }) {
                   </svg>
                   {t('nav.settings')}
                 </Link>
-                <button
-                  onClick={() => {
-                    onLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="btn-outline w-full flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  {t('nav.logout')}
-                </button>
+                <div className="w-full flex gap-3">
+                  <AuthButton variant="logout" onClick={() => { onLogout(); setMobileMenuOpen(false); }} className="w-full justify-center" />
+                </div>
               </>
             ) : (
               <>
@@ -239,8 +217,11 @@ function Header({ user, onLogout }) {
                   className="btn-outline text-center flex items-center justify-center gap-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                    <path d="M5 21a7 7 0 0114 0" />
+                    <path d="M20 12h-6" />
+                    <path d="M17 9l3 3-3 3" />
                   </svg>
                   {t('nav.login')}
                 </Link>
@@ -249,8 +230,11 @@ function Header({ user, onLogout }) {
                   className="btn-primary text-center flex items-center justify-center gap-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 12a3 3 0 100-6 3 3 0 000 6z" />
+                    <path d="M5 21a7 7 0 0114 0" />
+                    <path d="M19 8v6" />
+                    <path d="M16 11h6" />
                   </svg>
                   {t('nav.register')}
                 </Link>

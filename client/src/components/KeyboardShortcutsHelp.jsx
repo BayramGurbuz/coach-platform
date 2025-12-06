@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 function KeyboardShortcutsHelp({ isOpen: externalIsOpen, onClose: externalOnClose }) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const { t } = useLanguage();
   
   // Use external state if provided, otherwise use internal state
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -27,14 +29,14 @@ function KeyboardShortcutsHelp({ isOpen: externalIsOpen, onClose: externalOnClos
   }, [isOpen]);
 
   const shortcuts = [
-    { key: '?', description: 'Klavye kısayollarını göster' },
-    { key: 'H', description: 'Ana sayfaya git' },
-    { key: 'S', description: 'Ayarlar sayfasına git' },
-    { key: 'D', description: 'Dark mode\'u aç/kapat' },
-    { key: 'Escape', description: 'Modal\'ı kapat' },
-    { key: 'Tab', description: 'Bir sonraki elemana git' },
-    { key: 'Shift + Tab', description: 'Bir önceki elemana git' },
-    { key: 'Enter', description: 'Formu gönder / Butonu aktive et' },
+    { key: '?', description: t('shortcuts.showShortcuts') },
+    { key: 'H', description: t('shortcuts.goHome') },
+    { key: 'S', description: t('shortcuts.goSettings') },
+    { key: 'D', description: t('shortcuts.toggleDark') },
+    { key: 'Escape', description: t('shortcuts.closeModal') },
+    { key: 'Tab', description: t('shortcuts.nextElement') },
+    { key: 'Shift + Tab', description: t('shortcuts.prevElement') },
+    { key: 'Enter', description: t('shortcuts.submit') },
   ];
 
   return (
@@ -64,7 +66,7 @@ function KeyboardShortcutsHelp({ isOpen: externalIsOpen, onClose: externalOnClos
           >
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
               <h2 id="shortcuts-title" className="text-2xl font-bold text-neutral-900 dark:text-white">
-                ⌨️ Klavye Kısayolları
+                {t('shortcuts.title')}
               </h2>
               <button
                 onClick={() => setIsOpen(false)}
@@ -78,10 +80,10 @@ function KeyboardShortcutsHelp({ isOpen: externalIsOpen, onClose: externalOnClos
             </div>
 
             <p className="text-neutral-600 dark:text-white mb-6">
-              Uygulamayı daha hızlı kullanmak için klavye kısayollarından yararlanın.
+              {t('shortcuts.helper')}
               <br />
               <span className="text-sm italic">
-                (Shneiderman Kural 2: Expert kullanıcılar için kısayollar)
+                {t('shortcuts.hint')}
               </span>
             </p>
 
@@ -103,8 +105,7 @@ function KeyboardShortcutsHelp({ isOpen: externalIsOpen, onClose: externalOnClos
 
             <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/30 rounded-lg border-2 border-primary-200 dark:border-primary-700">
               <p className="text-sm text-neutral-700 dark:text-white">
-                💡 <strong>İpucu:</strong> Input alanında yazarken kısayollar devre dışıdır.
-                Form dışında herhangi bir yerde <kbd className="kbd mx-1">?</kbd> tuşuna basarak bu yardımı açabilirsiniz.
+              💡 <strong>Tip:</strong> {t('shortcuts.tip')}
               </p>
             </div>
           </div>

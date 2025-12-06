@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 function Messages({ user }) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const undoNotificationRef = useRef(null);
   
   const [messages, setMessages] = useState([]);
@@ -65,6 +65,7 @@ function Messages({ user }) {
         )
       );
     } catch (err) {
+      setError(t('common.error'));
       console.error('Mesaj okundu işaretlenemedi:', err);
     }
   };
@@ -79,6 +80,7 @@ function Messages({ user }) {
         )
       );
     } catch (err) {
+      setError(t('common.error'));
       console.error('Mesaj okunmadı işaretlenemedi:', err);
     }
   };
@@ -216,13 +218,14 @@ function Messages({ user }) {
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
+    const locale = language === 'tr' ? 'tr-TR' : 'en-US';
 
-    if (minutes < 1) return 'Az önce';
-    if (minutes < 60) return `${minutes} dakika önce`;
-    if (hours < 24) return `${hours} saat önce`;
-    if (days < 7) return `${days} gün önce`;
-    
-    return date.toLocaleDateString('tr-TR', {
+    if (minutes < 1) return t('messages.justNow');
+    if (minutes < 60) return t('messages.minutesAgo').replace('{{count}}', minutes);
+    if (hours < 24) return t('messages.hoursAgo').replace('{{count}}', hours);
+    if (days < 7) return t('messages.daysAgo').replace('{{count}}', days);
+
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -283,7 +286,7 @@ function Messages({ user }) {
                 <div>
                   <p className="font-semibold">
                     {undoType === 'all' 
-                      ? `${deletedAllMessages?.length || 0} mesaj silindi`
+                      ? `${deletedAllMessages?.length || 0} ${t('messages.allDeleted')}`
                       : `${deletedMessage?.sender_name} - ${t('messages.messageDeleted')}`
                     }
                   </p>
@@ -380,7 +383,7 @@ function Messages({ user }) {
               <div className="text-center py-12 text-danger-500" role="alert">
                 <p>{error}</p>
                 <button onClick={fetchMessages} className="btn-primary mt-4">
-                  Tekrar Dene
+                  {t('common.retry')}
                 </button>
               </div>
             ) : filteredMessages.length === 0 ? (
@@ -439,7 +442,7 @@ function Messages({ user }) {
                           {formatDate(message.created_at)}
                         </p>
                         <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                          {new Date(message.created_at).toLocaleDateString('tr-TR')}
+                          {new Date(message.created_at).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')}
                         </p>
                       </div>
                     </div>
@@ -466,9 +469,9 @@ function Messages({ user }) {
                           className="btn-outline flex items-center gap-2"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
-                          Okunmadı İşaretle
+                          {t('messages.markAsUnread')}
                         </button>
                       )}
                       
@@ -499,7 +502,11 @@ function Messages({ user }) {
         onClose={() => setConfirmDelete({ isOpen: false, messageId: null, senderName: '' })}
         onConfirm={handleDeleteMessage}
         title={t('messages.delete')}
-        message={`${confirmDelete.senderName} kullanıcısından gelen mesajı silmek istediğinizden emin misiniz?`}
+        message={
+          language === 'tr'
+            ? `${confirmDelete.senderName} kullanıcısından gelen mesajı silmek istediğinizden emin misiniz?`
+            : `Are you sure you want to delete the message from ${confirmDelete.senderName}?`
+        }
         confirmText={t('common.yes')}
         cancelText={t('common.cancel')}
         type="danger"
@@ -510,7 +517,7 @@ function Messages({ user }) {
         onClose={() => setConfirmDeleteAll(false)}
         onConfirm={handleDeleteAllMessages}
         title={t('messages.deleteAll')}
-        message={`Tüm mesajları (${messages.length} adet) silmek istediğinizden emin misiniz?`}
+        message={`${t('messages.deleteAllConfirm')} (${messages.length})`}
         confirmText={t('common.yes')}
         cancelText={t('common.cancel')}
         type="danger"

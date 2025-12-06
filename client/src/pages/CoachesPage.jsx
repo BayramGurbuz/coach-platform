@@ -47,7 +47,18 @@ function CoachesPage() {
       const response = await coachesAPI.getSpecialties();
       setSpecialties(response.data);
     } catch (err) {
-      console.error('Uzmanlık alanları yüklenemedi:', err);
+      console.error('Failed to load specialties:', err);
+    }
+  };
+
+  const getCoachRating = (id) => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(`coach_ratings_${id}`) || '[]');
+      if (!arr || arr.length === 0) return { avg: 0, count: 0 };
+      const sum = arr.reduce((s, r) => s + (r.rating || 0), 0);
+      return { avg: sum / arr.length, count: arr.length };
+    } catch (e) {
+      return { avg: 0, count: 0 };
     }
   };
 
@@ -128,6 +139,30 @@ function CoachesPage() {
         return sorted.sort((a, b) => (b.years_experience || 0) - (a.years_experience || 0));
       case 'exp-asc':
         return sorted.sort((a, b) => (a.years_experience || 0) - (b.years_experience || 0));
+      case 'rating-desc':
+        return sorted.sort((a, b) => {
+          try {
+            const aRatings = JSON.parse(localStorage.getItem(`coach_ratings_${a.id}`) || '[]');
+            const bRatings = JSON.parse(localStorage.getItem(`coach_ratings_${b.id}`) || '[]');
+            const aAvg = aRatings.length ? aRatings.reduce((s, r) => s + (r.rating || 0), 0) / aRatings.length : 0;
+            const bAvg = bRatings.length ? bRatings.reduce((s, r) => s + (r.rating || 0), 0) / bRatings.length : 0;
+            return bAvg - aAvg;
+          } catch (e) {
+            return 0;
+          }
+        });
+      case 'rating-asc':
+        return sorted.sort((a, b) => {
+          try {
+            const aRatings = JSON.parse(localStorage.getItem(`coach_ratings_${a.id}`) || '[]');
+            const bRatings = JSON.parse(localStorage.getItem(`coach_ratings_${b.id}`) || '[]');
+            const aAvg = aRatings.length ? aRatings.reduce((s, r) => s + (r.rating || 0), 0) / aRatings.length : 0;
+            const bAvg = bRatings.length ? bRatings.reduce((s, r) => s + (r.rating || 0), 0) / bRatings.length : 0;
+            return aAvg - bAvg;
+          } catch (e) {
+            return 0;
+          }
+        });
       default:
         return sorted;
     }
@@ -156,7 +191,7 @@ function CoachesPage() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>{language === 'tr' ? 'Kayıt olmadan koçlarla iletişime geçebilirsiniz!' : 'Contact coaches without registration!'}</span>
+          <span>{t('coaches.contactWithoutRegister')}</span>
         </div>
       </section>
 
@@ -220,6 +255,8 @@ function CoachesPage() {
                 <option value="msg-asc">📭 {t('coaches.sortMsgAsc')}</option>
                 <option value="exp-desc">⭐ {t('coaches.sortExpDesc')}</option>
                 <option value="exp-asc">🌱 {t('coaches.sortExpAsc')}</option>
+                <option value="rating-desc">🏆 {t('coaches.sortRatingDesc')}</option>
+                <option value="rating-asc">📉 {t('coaches.sortRatingAsc')}</option>
               </select>
             </div>
           </div>
@@ -334,6 +371,8 @@ function CoachesPage() {
                 {sortBy === 'msg-asc' && t('coaches.sortMsgAsc')}
                 {sortBy === 'exp-desc' && t('coaches.sortExpDesc')}
                 {sortBy === 'exp-asc' && t('coaches.sortExpAsc')}
+                {sortBy === 'rating-desc' && t('coaches.sortRatingDesc')}
+                {sortBy === 'rating-asc' && t('coaches.sortRatingAsc')}
               </strong>
             </div>
           )}
@@ -389,6 +428,22 @@ function CoachesPage() {
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('coaches.hourlyRate')}</p>
                   </div>
+                </div>
+
+                {/* Rating Badge (client-side) */}
+                <div className="flex items-center gap-2 mb-3 text-sm">
+                  {(() => {
+                    const r = getCoachRating(coach.id);
+                    return (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 rounded-full">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 .587l3.668 7.431L23.4 9.168l-5.6 5.458L18.836 24 12 20.201 5.164 24l1.036-9.374L.6 9.168l7.732-1.15L12 .587z" />
+                        </svg>
+                        <strong>{r.count ? r.avg.toFixed(1) : '—'}</strong>
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">/5 • {r.count}</span>
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* Message Count Badge */}

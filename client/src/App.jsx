@@ -102,7 +102,7 @@ function AppContent({ user, onLogout, onLogin }) {
           <Route path="/" element={<LandingPage />} />
           <Route path="/coaches" element={<CoachesPage />} />
           <Route path="/coach/:id" element={<CoachProfile />} />
-          <Route path="/register" element={<Register onRegister={(userData, token) => {
+          <Route path="/register" element={<Register user={user} onRegister={(userData, token) => {
             onLogin(userData, token);
             setToast({ message: '✓ Kayıt başarılı! Hoş geldiniz!', type: 'success' });
           }} />} />
@@ -110,7 +110,7 @@ function AppContent({ user, onLogout, onLogin }) {
             onLogin(userData, token);
             setToast({ message: '✓ Giriş başarılı! Hoş geldiniz!', type: 'success' });
           }} />} />
-          <Route path="/dashboard" element={<Dashboard user={user} />} />
+          <Route path="/dashboard" element={<Dashboard user={user} onLogout={onLogout} />} />
           <Route path="/messages" element={<Messages user={user} />} />
           <Route path="/settings" element={<SettingsSimple />} />
         </Routes>
@@ -138,28 +138,31 @@ function AppContent({ user, onLogout, onLogin }) {
 }
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Initialize user synchronously from localStorage so child routes
+    // don't redirect to /login during the initial render on page refresh.
+    try {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      return token && userData ? JSON.parse(userData) : null;
+    } catch (err) {
+      console.error('Failed to parse stored user', err);
+      return null;
+    }
+  });
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-    }
-
     // Apply saved theme and font size on app load
     const savedTheme = localStorage.getItem('theme') || 'light';
     const savedFontSize = localStorage.getItem('fontSize') || 'medium';
-    
+
     // Apply theme
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    
+
     // Apply font size
     const root = document.documentElement;
     switch (savedFontSize) {

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { coachesAPI } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import SatisfactionWidget from '../components/SatisfactionWidget';
 
 function LandingPage() {
   const { t } = useLanguage();
   const [topCoaches, setTopCoaches] = useState([]);
-  const [stats, setStats] = useState({ coaches: 0, messages: 0 });
+  const [stats, setStats] = useState({ coaches: 0, messages: 0, happyUsers: 0 });
   const [loading, setLoading] = useState(true);
+  const [ratingCount, setRatingCount] = useState(() => parseInt(localStorage.getItem('ratingCount') || '0', 10));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,6 +26,7 @@ function LandingPage() {
         setStats({
           coaches: coaches.length,
           messages: totalMessages,
+          happyUsers: Math.max(Math.floor(totalMessages * 0.95), ratingCount || 0),
         });
       } catch (error) {
         console.error('Veri yüklenirken hata:', error);
@@ -34,6 +37,17 @@ function LandingPage() {
 
     fetchData();
   }, []);
+
+  const getCoachRating = (id) => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(`coach_ratings_${id}`) || '[]');
+      if (!arr || arr.length === 0) return { avg: 0, count: 0 };
+      const sum = arr.reduce((s, r) => s + (r.rating || 0), 0);
+      return { avg: sum / arr.length, count: arr.length };
+    } catch (e) {
+      return { avg: 0, count: 0 };
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -124,9 +138,26 @@ function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{Math.floor(stats.messages * 0.95)}+</div>
+              <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">{Math.max(stats.happyUsers, ratingCount)}+</div>
               <div className="text-neutral-600 dark:text-neutral-300">{t('landing.statsUsers')}</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Satisfaction Section */}
+      <section className="bg-white dark:bg-neutral-800 py-16">
+        <div className="container-custom max-w-4xl mx-auto">
+          <div className="card p-8">
+            <SatisfactionWidget
+              initialCount={ratingCount}
+              onRate={(newCount) => {
+                // update local count and the visible stats
+                setRatingCount(newCount);
+                localStorage.setItem('ratingCount', String(newCount));
+                setStats((prev) => ({ ...prev, happyUsers: Math.max(prev.happyUsers, newCount) }));
+              }}
+            />
           </div>
         </div>
       </section>
@@ -256,6 +287,20 @@ function LandingPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                       </svg>
                       <span className="font-semibold">{coach.message_count || 0} {t('coaches.messages')}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      {(() => {
+                        const r = getCoachRating(coach.id);
+                        return (
+                          <span className="inline-flex items-center gap-2 px-3 py-1 bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 rounded-full text-sm">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 .587l3.668 7.431L23.4 9.168l-5.6 5.458L18.836 24 12 20.201 5.164 24l1.036-9.374L.6 9.168l7.732-1.15L12 .587z" />
+                            </svg>
+                            <strong>{r.count ? r.avg.toFixed(1) : '—'}</strong>
+                            <span className="text-xs text-neutral-500 dark:text-neutral-400">/5 • {r.count}</span>
+                          </span>
+                        );
+                      })()}
                     </div>
                     
                     <div className="flex flex-wrap gap-2 mb-4">

@@ -27,6 +27,7 @@ export const coachesAPI = {
   changePassword: (data) => api.put('/coaches/change-password', data),
   forgotPassword: (data) => api.post('/coaches/forgot-password', data),
   updateProfileImage: (data) => api.put('/coaches/profile-image', data),
+  deleteAccount: () => api.delete('/coaches/me'),
 };
 
 // Messages API

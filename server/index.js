@@ -29,7 +29,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Sunucu hatası oluştu' });
 });
 
-app.listen(PORT, () => {
+// Bind explicitly to localhost to avoid IPv6 EADDRINUSE on some Windows setups
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`🚀 Server çalışıyor: http://localhost:${PORT}`);
 });
 

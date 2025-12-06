@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coachesAPI } from '../services/api';
 import Breadcrumbs from '../components/Breadcrumbs';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { useLanguage } from '../context/LanguageContext';
 
-function Dashboard({ user }) {
+function Dashboard({ user, onLogout }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   
   // Profile editing
@@ -81,7 +85,7 @@ function Dashboard({ user }) {
     e.preventDefault();
 
     if (formData.specialties.length === 0) {
-      setError('En az bir uzmanlık alanı gereklidir');
+      setError(t('dashboard.minSpecialtyRequired'));
       return;
     }
 
@@ -101,10 +105,10 @@ function Dashboard({ user }) {
       const updatedUser = { ...user, ...formData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
 
-      showSuccess('Profiliniz başarıyla güncellendi');
+      showSuccess(t('dashboard.profileUpdated'));
       setIsEditing(false);
     } catch (err) {
-      setError('Profil güncellenirken bir hata oluştu');
+      setError(t('dashboard.profileUpdateError'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -116,13 +120,13 @@ function Dashboard({ user }) {
     if (file) {
       // Check file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
-        setError('Dosya boyutu en fazla 2MB olmalıdır');
+        setError(t('dashboard.fileTooLarge'));
         return;
       }
       
       // Check file type
       if (!file.type.startsWith('image/')) {
-        setError('Lütfen bir resim dosyası seçin');
+        setError(t('dashboard.invalidImageFile'));
         return;
       }
       
@@ -139,7 +143,7 @@ function Dashboard({ user }) {
 
   const handleImageUpload = async () => {
     if (!profileImageFile && !profileImagePreview) {
-      setError('Lütfen bir resim seçin');
+      setError(t('dashboard.invalidImageFile'));
       return;
     }
 
@@ -157,10 +161,10 @@ function Dashboard({ user }) {
       const updatedUser = { ...user, profile_image: profileImagePreview };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       
-      showSuccess('Profil resmi güncellendi');
+      showSuccess(t('dashboard.profileImageUpdated'));
       setProfileImageFile(null);
     } catch (err) {
-      setError('Profil resmi güncellenirken bir hata oluştu');
+      setError(t('dashboard.profileImageUpdateError'));
       console.error(err);
     } finally {
       setUploadingImage(false);
@@ -173,17 +177,17 @@ function Dashboard({ user }) {
     setError('');
     
     if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password) {
-      setError('Lütfen tüm alanları doldurun');
+      setError(t('dashboard.fillAllFields'));
       return;
     }
 
     if (passwordForm.new_password.length < 6) {
-      setError('Yeni şifre en az 6 karakter olmalıdır');
+      setError(t('dashboard.passwordTooShort'));
       return;
     }
 
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      setError('Yeni şifreler eşleşmiyor');
+      setError(t('dashboard.passwordsDontMatch'));
       return;
     }
 
@@ -201,9 +205,9 @@ function Dashboard({ user }) {
         confirm_password: '',
       });
       
-      showSuccess('Şifreniz başarıyla değiştirildi');
+      showSuccess(t('dashboard.passwordChanged'));
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Şifre değiştirilirken bir hata oluştu';
+      const errorMessage = err.response?.data?.error || t('dashboard.passwordChangeError');
       setError(errorMessage);
       console.error(err);
     } finally {
@@ -236,17 +240,17 @@ function Dashboard({ user }) {
         {/* Breadcrumbs */}
         <Breadcrumbs
           items={[
-            { label: 'Ana Sayfa', href: '/' },
-            { label: 'Profilim', href: null },
+            { label: t('nav.home'), href: '/' },
+            { label: t('dashboard.title'), href: null },
           ]}
         />
         
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">
-            Profilim
+            {t('dashboard.title')}
           </h1>
           <p className="text-neutral-600 dark:text-white">
-            Koç profilinizi görüntüleyin ve düzenleyin
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -296,7 +300,7 @@ function Dashboard({ user }) {
               role="tab"
               aria-selected={activeTab === 'profile'}
             >
-              👤 Profil Bilgileri
+              👤 {t('dashboard.tabProfile')}
             </button>
             <button
               onClick={() => setActiveTab('image')}
@@ -308,7 +312,7 @@ function Dashboard({ user }) {
               role="tab"
               aria-selected={activeTab === 'image'}
             >
-              📸 Profil Resmi
+              📸 {t('dashboard.tabPhoto')}
             </button>
             <button
               onClick={() => setActiveTab('security')}
@@ -320,7 +324,7 @@ function Dashboard({ user }) {
               role="tab"
               aria-selected={activeTab === 'security'}
             >
-              🔒 Şifre Değiştir
+              🔒 {t('dashboard.tabSecurity')}
             </button>
           </div>
         </div>
@@ -329,8 +333,8 @@ function Dashboard({ user }) {
         {activeTab === 'profile' && (
           <div className="card">
             {!isEditing ? (
-              <div>
-                <div className="flex justify-between items-start mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
+              <div className="space-y-6">
+                <div className="flex justify-between items-start pb-6 border-b border-neutral-200 dark:border-neutral-700">
                   <div>
                     <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                       {user.full_name}
@@ -340,7 +344,7 @@ function Dashboard({ user }) {
                   <button
                     onClick={() => setIsEditing(true)}
                     className="btn-primary"
-                    aria-label="Profili düzenle"
+                    aria-label={t('dashboard.tabProfile')}
                   >
                     <span className="flex items-center">
                       <svg 
@@ -352,7 +356,7 @@ function Dashboard({ user }) {
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Düzenle
+                      {t('common.edit')}
                     </span>
                   </button>
                 </div>
@@ -360,37 +364,37 @@ function Dashboard({ user }) {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                      Hakkımda
+                      {t('register.bio')}
                     </h3>
                     <p className="text-neutral-700 dark:text-white">
-                      {user.bio || 'Henüz bir açıklama eklenmemiş.'}
+                      {user.bio || t('coachProfile.noDescription')}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                        Saatlik Ücret
-                      </h3>
-                      <p className="text-3xl font-bold text-primary-500">
-                        {user.hourly_rate}₺
-                      </p>
+                          {t('coachProfile.hourlyRate')}
+                        </h3>
+                        <p className="text-3xl font-bold text-primary-500">
+                          {user.hourly_rate}₺
+                        </p>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                        Deneyim
-                      </h3>
-                      <p className="text-3xl font-bold text-neutral-900 dark:text-white">
-                        {user.years_experience || 0} Yıl
-                      </p>
+                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                          {t('coachProfile.experience')}
+                        </h3>
+                        <p className="text-3xl font-bold text-neutral-900 dark:text-white">
+                          {user.years_experience || 0} {t('coaches.yearsExp')}
+                        </p>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                      Uzmanlık Alanları
-                    </h3>
+                        {t('register.specialties')}
+                      </h3>
                     <div className="flex flex-wrap gap-2">
                       {user.specialties?.map((specialty, index) => (
                         <span key={index} className="badge-primary">
@@ -400,18 +404,55 @@ function Dashboard({ user }) {
                     </div>
                   </div>
                 </div>
+
+                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
+                  <h3 className="text-xl font-bold text-danger-600 dark:text-danger-400 mb-2">
+                    {t('dashboard.deleteAccountTitle') || 'Hesabı Sil'}
+                  </h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4">
+                    {t('dashboard.deleteAccountDesc') || 'Hesabınızı ve tüm mesajlarınızı kalıcı olarak silmek için bu seçeneği kullanın.'}
+                  </p>
+                    <button
+                      onClick={() => setConfirmOpen(true)}
+                      className="btn bg-danger-500 text-white hover:bg-danger-600 w-full"
+                    >
+                      {t('dashboard.deleteAccountBtn') || 'Hesabımı Sil'}
+                    </button>
+
+                  <ConfirmDialog
+                    isOpen={confirmOpen}
+                    onClose={() => setConfirmOpen(false)}
+                    title={t('dashboard.deleteAccountTitle')}
+                    message={t('dashboard.deleteConfirm')}
+                    confirmText={t('common.yes')}
+                    cancelText={t('common.cancel')}
+                    type="danger"
+                    onConfirm={async () => {
+                      try {
+                        await coachesAPI.deleteAccount();
+                        setConfirmOpen(false);
+                        onLogout?.();
+                        navigate('/');
+                      } catch (err) {
+                        setConfirmOpen(false);
+                        setError(t('common.error'));
+                        console.error(err);
+                      }
+                    }}
+                  />
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex justify-between items-center mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
                   <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                    Profili Düzenle
+                    {t('dashboard.editProfile') || 'Profili Düzenle'}
                   </h2>
                 </div>
 
                 <div>
                   <label htmlFor="full_name" className="label">
-                    Ad Soyad
+                    {t('register.fullName')}
                   </label>
                   <input
                     type="text"
@@ -426,7 +467,7 @@ function Dashboard({ user }) {
 
                 <div>
                   <label htmlFor="bio" className="label">
-                    Hakkınızda
+                    {t('register.bio')}
                   </label>
                   <textarea
                     id="bio"
@@ -435,14 +476,14 @@ function Dashboard({ user }) {
                     onChange={handleChange}
                     rows="5"
                     className="input"
-                    placeholder="Deneyimleriniz ve yaklaşımınızı anlatın..."
+                    placeholder={t('register.bioPlaceholder')}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="hourly_rate" className="label">
-                      Saatlik Ücret (₺)
+                      {t('register.hourlyRateLabel') || 'Saatlik Ücret (₺)'}
                     </label>
                     <input
                       type="number"
@@ -459,7 +500,7 @@ function Dashboard({ user }) {
 
                   <div>
                     <label htmlFor="years_experience" className="label">
-                      Deneyim (Yıl)
+                      {t('register.yearsExperience') || 'Deneyim (Yıl)'}
                     </label>
                     <input
                       type="number"
@@ -475,7 +516,7 @@ function Dashboard({ user }) {
 
                 <div>
                   <label htmlFor="specialty-input" className="label">
-                    Uzmanlık Alanları
+                    {t('register.specialties')}
                   </label>
                   <div className="flex gap-2 mb-3">
                     <input
@@ -489,7 +530,7 @@ function Dashboard({ user }) {
                           addSpecialty(currentSpecialty);
                         }
                       }}
-                      placeholder="Uzmanlık alanı yazın"
+                      placeholder={t('register.specialtyPlaceholder')}
                       className="input"
                     />
                     <button
@@ -497,7 +538,7 @@ function Dashboard({ user }) {
                       onClick={() => addSpecialty(currentSpecialty)}
                       className="btn-primary whitespace-nowrap"
                     >
-                      Ekle
+                      {t('register.addSpecialty')}
                     </button>
                   </div>
 
@@ -513,7 +554,7 @@ function Dashboard({ user }) {
                             type="button"
                             onClick={() => removeSpecialty(spec)}
                             className="hover:text-danger-500 transition-colors"
-                            aria-label={`${spec} kaldır`}
+                            aria-label={`${spec} ${t('common.remove') || 'kaldır'}`}
                           >
                             <svg 
                               className="w-4 h-4" 
@@ -531,13 +572,13 @@ function Dashboard({ user }) {
                   )}
                 </div>
 
-                <div className="flex gap-4">
+                  <div className="flex gap-4">
                   <button
                     type="submit"
                     disabled={loading}
                     className="btn-primary flex-1"
                   >
-                    {loading ? 'Kaydediliyor...' : 'Kaydet'}
+                    {loading ? t('common.save') + '...' : t('common.save')}
                   </button>
                   <button
                     type="button"
@@ -554,7 +595,7 @@ function Dashboard({ user }) {
                     }}
                     className="btn-secondary flex-1"
                   >
-                    İptal
+                    {t('common.cancel')}
                   </button>
                 </div>
               </form>
@@ -566,10 +607,10 @@ function Dashboard({ user }) {
         {activeTab === 'image' && (
           <div className="card">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-              Profil Resmi
+              {t('dashboard.tabPhoto')}
             </h2>
             <p className="text-neutral-600 dark:text-white mb-6">
-              Cihazınızdan profil resmi yükleyin
+              {t('dashboard.photoHint')}
             </p>
 
             <div className="space-y-6">
@@ -600,10 +641,10 @@ function Dashboard({ user }) {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-neutral-900 dark:text-white mb-1">
-                    {profileImagePreview ? 'Mevcut Resim' : 'Henüz profil resmi yok'}
+                    {profileImagePreview ? t('dashboard.currentImage') : t('dashboard.noProfileImage')}
                   </p>
                   <p className="text-sm text-neutral-600 dark:text-white">
-                    JPG, PNG veya GIF (Maks. 2MB)
+                    {t('dashboard.imageFormats')}
                   </p>
                 </div>
               </div>
@@ -611,7 +652,7 @@ function Dashboard({ user }) {
               {/* File Input */}
               <div>
                 <label htmlFor="profile-image-file" className="label">
-                  Resim Seç
+                  {t('dashboard.chooseImage')}
                 </label>
                 <input
                   type="file"
@@ -634,7 +675,7 @@ function Dashboard({ user }) {
                 disabled={uploadingImage || (!profileImageFile && !profileImagePreview)}
                 className="btn-primary w-full"
               >
-                {uploadingImage ? 'Yükleniyor...' : 'Profil Resmini Güncelle'}
+                {uploadingImage ? t('common.loading') : t('dashboard.updateProfileImageBtn')}
               </button>
             </div>
           </div>
@@ -642,18 +683,18 @@ function Dashboard({ user }) {
 
         {/* Security Tab */}
         {activeTab === 'security' && (
-          <div className="card">
+          <div className="card space-y-6">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-              Şifre Değiştir
+              {t('dashboard.tabSecurity')}
             </h2>
             <p className="text-neutral-600 dark:text-white mb-6">
-              Hesap güvenliğiniz için düzenli olarak şifrenizi değiştirin
+              {t('dashboard.passwordHint')}
             </p>
 
             <form onSubmit={handlePasswordChange} className="space-y-6">
               <div>
                 <label htmlFor="current_password" className="label">
-                  Mevcut Şifre
+                  {t('dashboard.currentPassword')}
                 </label>
                 <input
                   type="password"
@@ -669,7 +710,7 @@ function Dashboard({ user }) {
 
               <div>
                 <label htmlFor="new_password" className="label">
-                  Yeni Şifre
+                  {t('dashboard.newPassword')}
                 </label>
                 <input
                   type="password"

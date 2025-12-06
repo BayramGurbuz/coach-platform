@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 import { coachesAPI, messagesAPI } from '../services/api';
 import Breadcrumbs from '../components/Breadcrumbs';
+import CoachRating from '../components/CoachRating';
 
 function CoachProfile() {
   const { id } = useParams();
@@ -20,10 +22,11 @@ function CoachProfile() {
   const [successMessage, setSuccessMessage] = useState('');
   const [sentMessageData, setSentMessageData] = useState(null);
   const [undoTimer, setUndoTimer] = useState(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     fetchCoach();
-    // Sayfa açılınca en üste scroll
+    // Scroll to top on page open
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
 
@@ -42,7 +45,7 @@ function CoachProfile() {
       const response = await coachesAPI.getById(id);
       setCoach(response.data);
     } catch (err) {
-      setError('Koç bilgileri yüklenirken bir hata oluştu');
+      setError(t('common.error'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -61,7 +64,7 @@ function CoachProfile() {
     e.preventDefault();
     
     if (!contactForm.sender_name || !contactForm.sender_email || !contactForm.message) {
-      alert('Lütfen tüm alanları doldurun');
+      alert(t('coachProfile.fillAllFields'));
       return;
     }
 
@@ -79,7 +82,7 @@ function CoachProfile() {
       };
       setSentMessageData(messageData);
       
-      setSuccessMessage('Mesajınız gönderildi! 30 saniye içinde geri alabilirsiniz.');
+      setSuccessMessage(`${t('coachProfile.messageSent')} 30 ${t('coachProfile.undoMessage')}`);
       setContactForm({
         sender_name: '',
         sender_email: '',
@@ -95,7 +98,7 @@ function CoachProfile() {
       
       setUndoTimer(timer);
     } catch (err) {
-      alert('Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      alert(t('common.error'));
       console.error(err);
     } finally {
       setSending(false);
@@ -113,7 +116,7 @@ function CoachProfile() {
       setContactForm(sentMessageData.formData);
       setShowContactForm(true);
       setSentMessageData(null);
-      setSuccessMessage('Mesaj gönderimi iptal edildi. Mesajınızı düzenleyebilirsiniz.');
+      setSuccessMessage(t('coachProfile.undoCancelled'));
       
       // Timer'ı temizle
       if (undoTimer) {
@@ -126,7 +129,7 @@ function CoachProfile() {
         setSuccessMessage('');
       }, 3000);
     } catch (err) {
-      alert('Geri alma işlemi başarısız oldu.');
+      alert(t('coachProfile.undoFailed'));
       console.error(err);
     }
   };
@@ -134,9 +137,9 @@ function CoachProfile() {
   if (loading) {
     return (
       <div className="container-custom py-12">
-        <div className="text-center py-12" role="status" aria-live="polite">
+          <div className="text-center py-12" role="status" aria-live="polite">
           <div className="inline-block w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-neutral-600 dark:text-white">Yükleniyor...</p>
+          <p className="mt-4 text-neutral-600 dark:text-white">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -146,9 +149,9 @@ function CoachProfile() {
     return (
       <div className="container-custom py-12">
       <div className="text-center py-12 text-danger-500 dark:text-danger-400" role="alert">
-        <p>{error || 'Koç bulunamadı'}</p>
+        <p>{error || t('coachProfile.notFound')}</p>
         <button onClick={() => navigate('/')} className="btn-primary mt-4">
-          Ana Sayfaya Dön
+          {t('nav.home')}
         </button>
       </div>
       </div>
@@ -160,7 +163,7 @@ function CoachProfile() {
       <button
         onClick={() => navigate('/')}
         className="btn-outline mb-6 flex items-center"
-        aria-label="Ana sayfaya geri dön"
+        aria-label={t('common.back')}
       >
         <svg 
           className="w-5 h-5 mr-2" 
@@ -171,7 +174,7 @@ function CoachProfile() {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Geri Dön
+        {t('common.back')}
       </button>
 
       {successMessage && (
@@ -202,12 +205,12 @@ function CoachProfile() {
             <p className="font-semibold">{successMessage}</p>
           </div>
           
-          {sentMessageData && (
+            {sentMessageData && (
             <button
               onClick={handleUndoSendMessage}
               className="ml-4 px-4 py-2 bg-white text-warning-700 font-semibold rounded-lg hover:bg-warning-50 transition-colors border-2 border-warning-600"
             >
-              ↶ Geri Al
+              ↶ {t('coachProfile.undo')}
             </button>
           )}
         </div>
@@ -222,22 +225,22 @@ function CoachProfile() {
                 {coach.full_name}
               </h1>
               <p className="text-lg text-neutral-600 dark:text-white">
-                {coach.years_experience || 0} yıl deneyim
+                {coach.years_experience || 0} {t('coaches.yearsExp')}
               </p>
             </header>
 
             <section className="mb-8" aria-labelledby="about-heading">
               <h2 id="about-heading" className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-                Hakkında
+                {t('coachProfile.about')}
               </h2>
               <p className="text-neutral-700 dark:text-white text-lg leading-relaxed">
-                {coach.bio || 'Henüz bir açıklama eklenmemiş.'}
+                {coach.bio || t('coachProfile.noDescription')}
               </p>
             </section>
 
             <section className="mb-8" aria-labelledby="specialties-heading">
               <h2 id="specialties-heading" className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-                Uzmanlık Alanları
+                {t('coachProfile.specialties')}
               </h2>
               <div className="flex flex-wrap gap-3">
                 {coach.specialties?.map((specialty, index) => (
@@ -250,28 +253,28 @@ function CoachProfile() {
 
             <section aria-labelledby="contact-heading">
               <h2 id="contact-heading" className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
-                İletişim
+                {t('coachProfile.contactTitle')}
               </h2>
-              <div className="bg-neutral-50 p-6 rounded-lg">
-                <p className="text-neutral-700 dark:text-white mb-4">
-                  <strong>Email:</strong> {coach.email}
+              <div className="bg-neutral-50 dark:bg-neutral-800 p-6 rounded-lg">
+                <p className="text-neutral-700 dark:text-neutral-200 mb-4">
+                  <strong className="dark:text-white">Email:</strong> {coach.email}
                 </p>
-                <p className="text-sm text-neutral-600 dark:text-white mb-4">
-                  Bu koç ile iletişime geçmek için aşağıdaki butona tıklayarak mesaj gönderebilirsiniz.
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4">
+                  {t('coachProfile.contactPrompt')}
                 </p>
                 {!showContactForm ? (
                   <button
                     onClick={() => setShowContactForm(true)}
                     className="btn-primary"
-                    aria-label="Mesaj gönderme formunu aç"
+                    aria-label={t('coachProfile.sendMessage')}
                   >
-                    Mesaj Gönder
+                    {t('coachProfile.sendMessage')}
                   </button>
                 ) : (
                   <form onSubmit={handleSubmitContact} className="space-y-4">
                     <div>
                       <label htmlFor="sender_name" className="label">
-                        Adınız *
+                        {t('coachProfile.yourName')} *
                       </label>
                       <input
                         type="text"
@@ -287,7 +290,7 @@ function CoachProfile() {
 
                     <div>
                       <label htmlFor="sender_email" className="label">
-                        Email Adresiniz *
+                        {t('coachProfile.yourEmail')} *
                       </label>
                       <input
                         type="email"
@@ -303,7 +306,7 @@ function CoachProfile() {
 
                     <div>
                       <label htmlFor="message" className="label">
-                        Mesajınız *
+                        {t('coachProfile.yourMessage')} *
                       </label>
                       <textarea
                         id="message"
@@ -322,17 +325,17 @@ function CoachProfile() {
                         type="submit"
                         disabled={sending}
                         className="btn-primary"
-                        aria-label={sending ? 'Gönderiliyor...' : 'Mesajı gönder'}
+                        aria-label={sending ? t('coachProfile.sending') : t('coachProfile.sendMessage')}
                       >
-                        {sending ? 'Gönderiliyor...' : 'Gönder'}
+                        {sending ? t('coachProfile.sending') : t('coachProfile.sendMessage')}
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowContactForm(false)}
                         className="btn-secondary"
-                        aria-label="Formu kapat"
+                        aria-label={t('common.cancel')}
                       >
-                        İptal
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </form>
@@ -360,20 +363,23 @@ function CoachProfile() {
                   <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
                     {coach.full_name}
                   </h3>
+                    <div className="mt-4">
+                      <CoachRating coachId={coach.id} />
+                    </div>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-primary-50 dark:bg-primary-900/30 rounded-lg">
-                <span className="text-neutral-700 dark:text-white font-medium">Saatlik Ücret</span>
+                <span className="text-neutral-700 dark:text-white font-medium">{t('coachProfile.hourlyRate')}</span>
                 <span className="text-3xl font-bold text-primary-500">
-                  {coach.hourly_rate}₺
+                  {language === 'tr' ? `${coach.hourly_rate}₺` : `${coach.hourly_rate}₺`}
                 </span>
               </div>
 
               <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                <span className="text-neutral-700 dark:text-white font-medium">Deneyim</span>
+                <span className="text-neutral-700 dark:text-white font-medium">{t('coachProfile.experience')}</span>
                 <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-1">
-                  {coach.years_experience || 0} Yıl
+                  {coach.years_experience || 0} {t('coaches.yearsExp')}
                 </p>
               </div>
             </div>

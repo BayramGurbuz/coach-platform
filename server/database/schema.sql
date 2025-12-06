@@ -37,10 +37,3 @@ CREATE INDEX idx_messages_coach_id ON messages(coach_id);
 CREATE INDEX idx_messages_is_read ON messages(is_read);
 CREATE INDEX idx_coaches_hourly_rate ON coaches(hourly_rate);
 
--- Sample data (optional, for testing)
--- You can remove this section if you don't want sample data
-INSERT INTO coaches (email, password_hash, full_name, bio, hourly_rate, specialties, years_experience) VALUES
-('ahmet.yilmaz@example.com', '$2b$10$rKjQz7qKN8xYHZxZ9Z9Z9.', 'Ahmet Yılmaz', 'Kariyer koçluğu alanında 10 yıllık deneyime sahip, profesyonel gelişim uzmanı.', 150.00, ARRAY['Kariyer', 'Liderlik', 'İş Hayatı'], 10),
-('zeynep.kaya@example.com', '$2b$10$rKjQz7qKN8xYHZxZ9Z9Z9.', 'Zeynep Kaya', 'Yaşam koçu ve motivasyon uzmanı. Kişisel gelişim ve hedef belirleme konularında deneyimli.', 120.00, ARRAY['Yaşam Koçluğu', 'Motivasyon', 'Kişisel Gelişim'], 7),
-('mehmet.demir@example.com', '$2b$10$rKjQz7qKN8xYHZxZ9Z9Z9.', 'Mehmet Demir', 'Fitness ve sağlıklı yaşam koçu. Spor psikolojisi ve beslenme danışmanlığı.', 100.00, ARRAY['Fitness', 'Sağlık', 'Spor'], 5);
-
